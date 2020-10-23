@@ -1,0 +1,10 @@
+{
+  "name": "@quick.eco/sqlite",
+  "description": "Sqlite storage manager for quick.eco",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^7.1.1"
+  }
+}
