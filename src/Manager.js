@@ -76,7 +76,7 @@ class SqliteManager {
      */
     write(rdata) {
         return new Promise((resolve, reject) => {
-            if(!this.hasInit) return reject(new Error('DB has not been init'))
+            if (!this.hasInit) return reject(new Error('DB has not been init'))
             if (!rdata || typeof rdata !== 'object') return reject(new Error('Invalid data'));
             const { ID, data } = rdata;
 
@@ -85,7 +85,7 @@ class SqliteManager {
             this._createTable();
 
             const sql = this.db.prepare(`INSERT INTO ${this.table} (user, balance) VALUES (?,?)`).run(ID, data)
-            
+
             resolve(sql);
         })
     }
@@ -103,15 +103,56 @@ class SqliteManager {
      * @param {string} id User ID
      * @returns {Promise<any>}
      */
-    read (id) {
+    read(id) {
         return new Promise((resolve, reject) => {
-            if(!this.hasInit) return reject(new Error('DB has not been init'))
+            if (!this.hasInit) return reject(new Error('DB has not been init'))
 
             this._createTable();
 
-            if(!id || typeof id !== 'string') return resolve(new Error('Invalid ID'));
+            if (!id || typeof id !== 'string') return resolve(new Error('Invalid ID'));
 
             const sql = this.db.prepare(`SELECT * FROM ${this.table} WHERE user = (?)`).get(id);
+
+            resolve(sql);
+        })
+    }
+
+    /**
+     * Updates data
+     * @param {object} rdata Data
+     * @returns {Promise<any>}
+     */
+    update(rdata = {}) {
+        return new Promise((resolve, reject) => {
+            if (!this.hasInit) return reject(new Error('DB has not been init'))
+            if (!rdata || typeof rdata !== 'object') return reject(new Error('Invalid data'));
+
+            const { ID, data } = rdata;
+
+            if (!ID || typeof ID !== 'string') return reject(new Error('Invalid ID'));
+
+            try {
+
+                const sql = this.db.prepare(`UPDATE ${this.table} SET balance = ? WHERE user = ?`).run(data, ID);
+
+                resolve(sql);
+
+            } catch (e) {
+                reject(e)
+            }
+        })
+    }
+
+    /**
+     * Deletes data
+     * @param {string} ID User ID 
+     */
+    delete(ID) {
+        return new Promise((resolve, reject) => {
+            if (!this.hasInit) return reject(new Error('DB has not been init'))
+            if (!ID || typeof ID !== 'string') return reject(new Error('Invalid ID'));
+
+            const sql = this.db.prepare(`DELETE FROM ${this.table} WHERE user = ?`).run(ID);
 
             resolve(sql);
         })
@@ -121,15 +162,29 @@ class SqliteManager {
      * Returns all the entries in the table
      * @returns {Promise<object[]>}
      */
-    readAll ()  {
+    readAll() {
         return new Promise((resolve, reject) => {
-            if(!this.hasInit) return reject(new Error('DB has not been init'))
+            if (!this.hasInit) return reject(new Error('DB has not been init'))
 
             this._createTable();
 
             const sql = this.db.prepare(`SELECT * FROM ${this.table}`).all();
 
             resolve(sql)
+        })
+    }
+
+    /**
+     * Deletes all the entries
+     * @return {Promise<boolean>}
+     */
+    deleteAll () {
+        return new Promise((resolve, reject) => {
+            if (!this.hasInit) return reject(new Error('DB has not been init'))
+            
+            const sql = this.db.prepare(`DROP TABLE IF EXISTS ${this.table}`).run();
+
+            return sql;
         })
     }
 };
